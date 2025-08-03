@@ -1,0 +1,85 @@
+CREATE TABLE uber_requests (
+    request_id INTEGER PRIMARY KEY,
+    pickup_point TEXT,
+    driver_id INTEGER,
+    status TEXT,
+    request_timestamp DATETIME,
+    drop_timestamp DATETIME,
+    request_hour INTEGER,
+    trip_duration_mins FLOAT
+);
+
+SELECT 
+    status, 
+    COUNT(*) AS total_requests
+FROM uber_requests
+GROUP BY status;
+
+
+SELECT 
+    pickup_point, 
+    COUNT(*) AS total_requests
+FROM uber_requests
+GROUP BY pickup_point;
+
+
+SELECT 
+    request_hour, 
+    COUNT(*) AS total_requests
+FROM uber_requests
+GROUP BY request_hour
+ORDER BY request_hour;
+
+
+SELECT 
+    request_hour, 
+    COUNT(*) AS cancellations
+FROM uber_requests
+WHERE status = 'Cancelled'
+GROUP BY request_hour
+ORDER BY request_hour;
+
+
+SELECT 
+    request_hour, 
+    COUNT(*) AS no_car_cases
+FROM uber_requests
+WHERE status = 'No Cars Available'
+GROUP BY request_hour
+ORDER BY request_hour;
+
+
+SELECT 
+    ROUND(
+        SUM(CASE WHEN status = 'Trip Completed' THEN 1 ELSE 0 END) * 100.0 / COUNT(*),
+        2
+    ) AS completion_rate_percentage
+FROM uber_requests;
+
+
+SELECT 
+    request_hour, 
+    COUNT(*) AS cancellations
+FROM uber_requests
+WHERE status = 'Cancelled'
+GROUP BY request_hour
+ORDER BY cancellations DESC
+LIMIT 1;
+
+
+SELECT 
+    request_hour,
+    COUNT(*) AS total_requests,
+    SUM(CASE WHEN status = 'Trip Completed' THEN 1 ELSE 0 END) AS supply,
+    COUNT(*) - SUM(CASE WHEN status = 'Trip Completed' THEN 1 ELSE 0 END) AS demand_gap
+FROM uber_requests
+GROUP BY request_hour
+ORDER BY request_hour;
+
+
+SELECT 
+    pickup_point,
+    ROUND(AVG(trip_duration_mins), 2) AS avg_trip_duration_mins
+FROM uber_requests
+WHERE status = 'Trip Completed'
+GROUP BY pickup_point;
